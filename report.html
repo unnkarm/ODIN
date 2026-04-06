@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ODIN — Mission Report</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@200;300;400;500;600;700;800;900&family=Barlow:wght@300;400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/odin.css">
+  <style>
+    /* HERO */
+    #hero { position:relative; min-height:86vh; display:flex; align-items:center; overflow:hidden; z-index:2; }
+    #three-report { position:absolute; right:0; top:0; width:54%; height:100%; z-index:0; }
+    .hero-fade { position:absolute; inset:0; background:linear-gradient(to right,rgba(0,0,0,1) 32%,rgba(0,0,0,.15) 70%); z-index:1; }
+    .hero-content { position:relative; z-index:2; padding:8rem var(--section-x) 5rem; max-width:740px; }
+    .h-eyebrow { font-family:var(--font-mono); font-size:.58rem; letter-spacing:.4em; color:var(--gold); text-transform:uppercase; margin-bottom:1.2rem; opacity:0; animation:fadeUp .9s .1s forwards; }
+    .h-title   { font-family:var(--font-display); font-size:clamp(4rem,8vw,9rem); font-weight:900; line-height:.88; margin-bottom:1.5rem; opacity:0; animation:fadeUp 1s .25s forwards; }
+    .h-body    { font-size:.95rem; color:#555; max-width:440px; line-height:1.9; font-weight:300; opacity:0; animation:fadeUp .9s .4s forwards; }
+
+    /* OUTCOME BANNER */
+    #outcome { position:relative; z-index:2; background:var(--surface-1); border-top:1px solid var(--border-1); border-bottom:1px solid var(--border-1); padding:4rem var(--section-x); }
+    .outcome-inner { max-width:1400px; margin:0 auto; display:grid; grid-template-columns:auto 1fr auto; gap:4rem; align-items:center; }
+    .outcome-badge { font-family:var(--font-display); font-size:5.5rem; font-weight:900; color:var(--green); line-height:1; letter-spacing:-.02em; }
+    .outcome-text h2 { font-family:var(--font-display); font-size:2.5rem; font-weight:700; line-height:1; margin-bottom:.5rem; }
+    .outcome-text p  { font-size:.82rem; color:#555; line-height:1.75; }
+    .outcome-time    { text-align:right; }
+    .ot-l  { font-family:var(--font-mono); font-size:.5rem; letter-spacing:.2em; color:var(--text-tertiary); text-transform:uppercase; margin-bottom:.5rem; }
+    .ot-v  { font-family:var(--font-display); font-size:2.2rem; font-weight:700; color:var(--gold); }
+    .ot-s  { font-family:var(--font-mono); font-size:.52rem; color:var(--text-tertiary); margin-top:.3rem; }
+
+    /* METRICS */
+    #metrics { position:relative; z-index:2; padding:6rem var(--section-x); max-width:1400px; margin:0 auto; }
+    .m-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--border-1); }
+    .m-block { background:var(--bg); padding:2.5rem 2rem; }
+    .m-label { font-family:var(--font-mono); font-size:.5rem; letter-spacing:.22em; color:var(--text-tertiary); text-transform:uppercase; margin-bottom:1rem; }
+    .m-val   { font-family:var(--font-display); font-size:clamp(2rem,4vw,3.5rem); font-weight:800; color:var(--gold); line-height:1; margin-bottom:.35rem; }
+    .m-sub   { font-size:.7rem; color:var(--text-tertiary); line-height:1.6; }
+    .m-bar   { height:2px; background:#111; margin-top:1.5rem; overflow:hidden; }
+    .m-fill  { height:100%; width:0; transition:width 2s var(--ease-out); }
+
+    /* LOG */
+    #log-section { position:relative; z-index:2; padding:0 var(--section-x) 6rem; max-width:1400px; margin:0 auto; }
+    .log-feed { border:1px solid var(--border-1); overflow:hidden; }
+    .log-row { display:grid; grid-template-columns:160px 70px 1fr; gap:2rem; padding:1.2rem 2rem; border-bottom:1px solid var(--border-1); align-items:start; transition:background .2s; font-size:.78rem; }
+    .log-row:hover { background:var(--surface-1); }
+    .log-row:last-child { border-bottom:none; }
+    .log-time { font-family:var(--font-mono); font-size:.55rem; color:var(--text-tertiary); line-height:1.7; }
+    .log-msg  { color:#666; line-height:1.75; }
+    .log-msg strong { color:#ccc; font-weight:500; }
+
+    /* CHARTS */
+    #charts { position:relative; z-index:2; padding:0 var(--section-x) 7rem; max-width:1400px; margin:0 auto; }
+    .chart-grid { display:grid; grid-template-columns:1fr 1fr; gap:2rem; }
+    .chart-box   { border:1px solid var(--border-1); background:var(--surface-1); padding:2rem; }
+    .chart-title { font-family:var(--font-display); font-size:1rem; font-weight:700; letter-spacing:.05em; margin-bottom:.3rem; }
+    .chart-sub   { font-family:var(--font-mono); font-size:.5rem; color:var(--text-tertiary); margin-bottom:1.5rem; letter-spacing:.1em; text-transform:uppercase; }
+    .chart-canvas { width:100%; height:160px; display:block; }
+
+    /* CTA */
+    #cta { position:relative; z-index:2; padding:8rem var(--section-x); text-align:center; border-top:1px solid var(--border-1); }
+    .cta-title { font-family:var(--font-display); font-size:clamp(3rem,7vw,7.5rem); font-weight:900; line-height:.9; margin-bottom:2rem; }
+    .cta-sub   { font-size:1rem; color:#555; max-width:450px; margin:0 auto 3rem; line-height:1.85; font-weight:300; }
+
+    @media (max-width:900px) {
+      .outcome-inner { grid-template-columns:1fr; text-align:center; }
+      .outcome-time  { text-align:center; }
+      .m-grid   { grid-template-columns:repeat(2,1fr); }
+      .chart-grid { grid-template-columns:1fr; }
+      .log-row  { grid-template-columns:1fr; gap:.5rem; }
+      #three-report { width:100%; opacity:.2; }
+      .hero-fade { background:rgba(0,0,0,.8); }
+      #metrics,#log-section,#charts,#cta,#outcome { padding-left:1.5rem; padding-right:1.5rem; }
+      #hero .hero-content { padding-left:1.5rem; padding-right:1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <div id="cursor"></div>
+  <div id="cursor-ring"></div>
+  <div id="page-transition"></div>
+  <canvas id="stars"></canvas>
+  <div id="nav-mount"></div>
+
+  <section id="hero">
+    <div id="three-report"></div>
+    <div class="hero-fade"></div>
+    <div class="hero-content">
+      <p class="h-eyebrow">Mission Report</p>
+      <h1 class="h-title">Artemis VII<br><span class="gold">Mission<br>Complete.</span></h1>
+      <p class="h-body">End-of-mission analytics, replanning event log, AI performance metrics, and crew safety summary for the Earth–Moon transit.</p>
+    </div>
+  </section>
+
+  <div id="outcome">
+    <div class="outcome-inner reveal">
+      <div class="outcome-badge">✓</div>
+      <div class="outcome-text">
+        <h2>Mission Successful — All Objectives Met</h2>
+        <p>Lunar orbit insertion achieved. Crew nominal. One replanning event successfully handled by AI Copilot. ODIN performed within specification throughout the full 40h 42m transit.</p>
+      </div>
+      <div class="outcome-time">
+        <div class="ot-l">Mission Elapsed Time</div>
+        <div class="ot-v">40h 42m</div>
+        <div class="ot-s">−30 min vs baseline trajectory</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="metrics">
+    <p class="section-eyebrow reveal">Mission Analytics</p>
+    <div class="m-grid">
+      <div class="m-block reveal">
+        <div class="m-label">Total Transit Time</div>
+        <div class="m-val">40.7h</div>
+        <div class="m-sub">−0.5h vs Hohmann baseline<br>Option C fast-exit maneuver</div>
+        <div class="m-bar"><div class="m-fill" style="background:var(--gold)" data-w="82%"></div></div>
+      </div>
+      <div class="m-block reveal delay-1">
+        <div class="m-label">Fuel Consumed</div>
+        <div class="m-val">21.6%</div>
+        <div class="m-sub">+2.1% delta from replanning<br>Remaining: 78.4% margin</div>
+        <div class="m-bar"><div class="m-fill" style="background:var(--blue)" data-w="22%"></div></div>
+      </div>
+      <div class="m-block reveal delay-2">
+        <div class="m-label">Radiation Exposure</div>
+        <div class="m-val" style="color:var(--green)">12.4 mSv</div>
+        <div class="m-sub">44% below original exposure<br>Within safe crew threshold</div>
+        <div class="m-bar"><div class="m-fill" style="background:var(--green)" data-w="28%"></div></div>
+      </div>
+      <div class="m-block reveal delay-3">
+        <div class="m-label">Replanning Events</div>
+        <div class="m-val">1</div>
+        <div class="m-sub">Class X2.1 solar flare — T+18h<br>Resolved in 2.3 seconds</div>
+        <div class="m-bar"><div class="m-fill" style="background:var(--red)" data-w="15%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="log-section">
+    <p class="section-eyebrow reveal">Explainability Log</p>
+    <h2 class="section-title reveal">Decision Audit Trail</h2>
+    <div class="log-feed reveal">
+      <div class="log-row">
+        <div class="log-time">2014-03-15<br>12:00:07 UTC<br>MET +00:00</div>
+        <div><div class="log-badge lb-info">INFO</div></div>
+        <div class="log-msg"><strong>Mission Artemis-VII initialized.</strong> Start: Earth LEO (408km). Target: Lunar orbit (100km). Priority weights loaded: Fuel 30%, Time 25%, Risk 35%, Success 10%. Baseline Hohmann transfer computed. Fuel budget: 23.5% total delta-V allocated.</div>
+      </div>
+      <div class="log-row">
+        <div class="log-time">2014-03-15<br>12:00:09 UTC<br>MET +00:02</div>
+        <div><div class="log-badge lb-ok">OK</div></div>
+        <div class="log-msg"><strong>Trans-Lunar Injection burn executed.</strong> Duration: 5m 42s. Delta-V: 3.12 km/s. Trajectory insertion nominal. Estimated Moon arrival: T+41h 12m. Monitoring loop activated — polling NASA SWPC and NOAA at 60s intervals.</div>
+      </div>
+      <div class="log-row">
+        <div class="log-time">2014-03-15<br>14:22:18 UTC<br>MET +02:22</div>
+        <div><div class="log-badge lb-warn">WARN</div></div>
+        <div class="log-msg"><strong>Solar activity anomaly detected.</strong> NOAA Space Weather Center reports impulsive Class M9.4 precursor event from Active Region AR2014. Trajectory analysis initiated. Particle stream projected to intersect current path at 68% mission progress.</div>
+      </div>
+      <div class="log-row">
+        <div class="log-time">2014-03-15<br>14:22:21 UTC<br>MET +02:22</div>
+        <div><div class="log-badge lb-crit">CRIT</div></div>
+        <div class="log-msg"><strong>Flare upgraded to Class X2.1 — CRITICAL.</strong> Projected crew dose on baseline trajectory: 22.1 mSv — exceeds limit by 2.4×. AI Copilot activated. 847 trajectory variants evaluated against live cost function. All alternatives ranked in 2.3 seconds.</div>
+      </div>
+      <div class="log-row">
+        <div class="log-time">2014-03-15<br>14:22:24 UTC<br>MET +02:22</div>
+        <div><div class="log-badge lb-ok">OK</div></div>
+        <div class="log-msg"><strong>Option C auto-selected and executed.</strong> Composite cost score: 0.312 — lowest among all candidates (A: 0.388, B: 0.341). Fast-exit transfer window advances departure by 0.5h. Radiation dose reduced to 12.4 mSv (−44%). Fuel delta: +2.1%. ETA: −30 minutes vs baseline.</div>
+      </div>
+      <div class="log-row">
+        <div class="log-time">2014-03-15<br>18:40:02 UTC<br>MET +06:40</div>
+        <div><div class="log-badge lb-info">INFO</div></div>
+        <div class="log-msg"><strong>Midcourse correction burn executed.</strong> Navigation drift: 8.2km positional error corrected. Delta-V: 0.04 km/s. Updated trajectory confirmed optimal. All parameters GREEN. ETA Moon: T+34h 02m from burn epoch.</div>
+      </div>
+      <div class="log-row">
+        <div class="log-time">2014-03-16<br>05:42:11 UTC<br>MET +17:42</div>
+        <div><div class="log-badge lb-ok">OK</div></div>
+        <div class="log-msg"><strong>Lunar Orbit Insertion successful.</strong> 100km circular lunar orbit achieved. Crew nominal. Total fuel consumed: 21.6%. Total radiation: 12.4 mSv. Mission status: <strong>SUCCESS</strong>. ODIN autonomous systems disengaging.</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="charts">
+    <div class="chart-grid reveal">
+      <div class="chart-box">
+        <div class="chart-title">Radiation Exposure Timeline</div>
+        <div class="chart-sub">mSv over mission duration</div>
+        <canvas class="chart-canvas" id="chart-rad"></canvas>
+      </div>
+      <div class="chart-box">
+        <div class="chart-title">Fuel Consumption Profile</div>
+        <div class="chart-sub">% remaining over mission duration</div>
+        <canvas class="chart-canvas" id="chart-fuel"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div id="cta">
+    <h2 class="cta-title reveal">Run another<br><span class="gold">mission.</span></h2>
+    <p class="cta-sub reveal delay-1">Adjust dates, priorities, and constraints. ODIN computes a new trajectory and responds to whatever the universe throws at it.</p>
+    <button class="btn btn-primary reveal delay-2" data-href="mission.html"><span>⬡ New Mission</span></button>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-logo">O<span class="gold">DIN</span></div>
+      <nav class="footer-nav">
+        <a data-href="index.html">Home</a>
+        <a data-href="mission.html">Mission</a>
+        <a data-href="copilot.html">AI Copilot</a>
+      </nav>
+      <p class="footer-copy">Orbital Decision Intelligence Network<br>Mission Complete</p>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="js/odin-core.js"></script>
+  <script src="js/odin-three.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      odinInit('report');
+      initReportScene('three-report');
+      setTimeout(initCharts, 400);
+    });
+
+    function drawChart(canvasId, data, color) {
+      const c = document.getElementById(canvasId); if (!c) return;
+      const ctx = c.getContext('2d');
+      c.width = c.offsetWidth; c.height = 160;
+      const w = c.width, h = c.height, pad = 22;
+      const max = Math.max(...data), min = Math.min(...data), range = max - min || 1;
+      ctx.clearRect(0,0,w,h);
+      // Grid
+      tctx: for (let i=0;i<=4;i++) {
+        const py = pad + (h-pad*2)*(i/4);
+        ctx.beginPath(); ctx.moveTo(pad,py); ctx.lineTo(w-pad,py);
+        ctx.strokeStyle='rgba(255,255,255,0.04)'; ctx.lineWidth=.5; ctx.stroke();
+      }
+      const pts = data.map((v,i) => ({
+        x: pad + (w-pad*2)*(i/(data.length-1)),
+        y: pad + (h-pad*2)*(1-(v-min)/range)
+      }));
+      // Fill area
+      ctx.beginPath(); ctx.moveTo(pts[0].x, h-pad);
+      pts.forEach(p => ctx.lineTo(p.x, p.y));
+      ctx.lineTo(pts[pts.length-1].x, h-pad); ctx.closePath();
+      const grd = ctx.createLinearGradient(0,0,0,h);
+      grd.addColorStop(0, color.replace(')', ',.22)').replace('rgb','rgba'));
+      grd.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle = grd; ctx.fill();
+      // Line
+      ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
+      pts.forEach(p => ctx.lineTo(p.x,p.y));
+      ctx.strokeStyle=color; ctx.lineWidth=2; ctx.stroke();
+      // Flare event marker
+      const fi = Math.floor(data.length*.28);
+      ctx.beginPath(); ctx.moveTo(pts[fi].x,pad); ctx.lineTo(pts[fi].x,h-pad);
+      ctx.strokeStyle='rgba(255,61,61,0.28)'; ctx.lineWidth=1; ctx.setLineDash([3,6]); ctx.stroke(); ctx.setLineDash([]);
+      ctx.font="500 9px 'Space Mono'"; ctx.fillStyle='rgba(255,61,61,0.45)';
+      ctx.fillText('FLARE', pts[fi].x+4, pad+11);
+    }
+
+    function initCharts() {
+      drawChart('chart-rad',  [0.2,0.4,0.8,1.5,3.2,7.8,12.4,12.4,12.4,12.4,12.4], 'rgb(57,255,136)');
+      drawChart('chart-fuel', [100,95,88,84,80,79,78,77,75,72,78.4],               'rgb(200,169,110)');
+    }
+    window.addEventListener('resize', initCharts);
+  </script>
+</body>
+</html>

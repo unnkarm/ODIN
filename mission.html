@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ODIN — Mission Control</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@200;300;400;500;600;700;800;900&family=Barlow:wght@300;400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/odin.css">
+  <style>
+    /* PAGE HERO */
+    #page-hero { position: relative; padding: 10rem var(--section-x) 4rem; z-index: 2; }
+    .page-eyebrow { font-family: var(--font-mono); font-size: 0.58rem; letter-spacing: 0.4em; color: var(--gold); text-transform: uppercase; margin-bottom: 1.2rem; opacity: 0; animation: fadeUp .9s .15s forwards; }
+    .page-h1 { font-family: var(--font-display); font-size: clamp(3.5rem, 8vw, 8.5rem); font-weight: 900; line-height: .88; letter-spacing: -.01em; margin-bottom: 1.5rem; opacity: 0; animation: fadeUp 1s .3s forwards; }
+    .page-p  { font-size: .95rem; color: #555; max-width: 540px; line-height: 1.9; font-weight: 300; opacity: 0; animation: fadeUp .9s .45s forwards; }
+
+    /* INIT PANEL */
+    #init-panel { position: relative; z-index: 2; padding: 0 var(--section-x) 3rem; max-width: 1400px; margin: 0 auto; }
+    .init-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--border-1); }
+    .init-block { background: var(--bg); padding: 2rem; }
+    .init-label { font-family: var(--font-mono); font-size: .52rem; letter-spacing: .22em; color: var(--text-tertiary); text-transform: uppercase; margin-bottom: 1rem; }
+    .init-select {
+      width: 100%; background: transparent; border: none;
+      border-bottom: 1px solid var(--border-1); color: #fff;
+      font-family: var(--font-display); font-size: 1.3rem; font-weight: 600; letter-spacing: .04em;
+      padding: .5rem 0; cursor: pointer; appearance: none; -webkit-appearance: none; outline: none;
+      transition: border-color .3s;
+    }
+    .init-select:focus, .init-select:hover { border-bottom-color: var(--gold); }
+    .init-select option { background: #000; }
+    .init-val { font-family: var(--font-display); font-size: 1.8rem; font-weight: 700; color: var(--gold); margin-top: .4rem; }
+    .prio-btns { display: flex; gap: .5rem; flex-wrap: wrap; }
+    .prio-btn {
+      font-family: var(--font-mono); font-size: .52rem; letter-spacing: .1em;
+      padding: .4rem .85rem; border: 1px solid var(--border-2); color: var(--text-tertiary);
+      background: transparent; cursor: pointer; transition: all .2s; text-transform: uppercase;
+    }
+    .prio-btn:hover  { border-color: var(--gold); color: var(--gold); }
+    .prio-btn.active { border-color: var(--gold); color: #000; background: var(--gold); }
+    .launch-wrap { padding: 0 var(--section-x); max-width: 1400px; margin: 0 auto 4rem; }
+
+    /* DASHBOARD */
+    #dashboard { position: relative; z-index: 2; padding: 0 var(--section-x) 8rem; max-width: 1400px; margin: 0 auto; }
+    .dash-wrap  { border: 1px solid var(--border-1); overflow: hidden; }
+    .dash-topbar { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; background: var(--surface-1); border-bottom: 1px solid var(--border-1); gap: 1rem; flex-wrap: wrap; }
+    .dash-id { font-family: var(--font-mono); font-size: .56rem; letter-spacing: .13em; color: var(--text-secondary); }
+    .dash-body { display: grid; grid-template-columns: 1fr 320px; min-height: 480px; }
+    .dash-main { border-right: 1px solid var(--border-1); position: relative; }
+    #traj-canvas { width: 100%; height: 480px; display: block; }
+    .phase-strip { display: flex; justify-content: space-between; flex-wrap: wrap; gap: .5rem; padding: .8rem 1.5rem; background: var(--surface-1); border-top: 1px solid var(--border-1); }
+    .ph { font-family: var(--font-mono); font-size: .5rem; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: .1em; padding-left: 1rem; position: relative; }
+    .ph::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 5px; height: 5px; border-radius: 50%; background: var(--text-tertiary); }
+    .ph.done::before { background: var(--green); }
+    .ph.cur::before  { background: var(--gold); box-shadow: 0 0 6px var(--gold); }
+    .dash-panel { background: var(--surface-1); display: flex; flex-direction: column; }
+    .p-sec { padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border-1); }
+    .p-sec:last-child { border-bottom: none; }
+    .p-label { font-family: var(--font-mono); font-size: .5rem; letter-spacing: .2em; color: var(--text-tertiary); text-transform: uppercase; margin-bottom: .85rem; }
+    .tel-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: .5rem; }
+    .tel-k { font-family: var(--font-mono); font-size: .58rem; color: var(--text-secondary); }
+    .tel-v { font-family: var(--font-mono); font-size: .62rem; font-weight: 700; }
+    .risk-row { margin-bottom: .85rem; }
+    .risk-header { display: flex; justify-content: space-between; margin-bottom: .3rem; }
+    .ph-name { font-family: var(--font-display); font-size: 1.55rem; font-weight: 700; color: var(--gold); margin-bottom: .3rem; }
+
+    /* HAZARD TOAST */
+    #hazard-toast {
+      position: fixed; top: 80px; right: 2rem; z-index: 9999;
+      background: #0d0000; border: 1px solid var(--red);
+      padding: 1.2rem 1.5rem; max-width: 300px;
+      transform: translateX(130%); transition: transform .55s var(--ease-out);
+      box-shadow: 0 0 40px rgba(255,61,61,0.08);
+    }
+    #hazard-toast.show { transform: translateX(0); }
+    .toast-head { font-family: var(--font-display); font-size: .72rem; font-weight: 700; letter-spacing: .2em; color: var(--red); text-transform: uppercase; margin-bottom: .4rem; display: flex; align-items: center; gap: .5rem; }
+    .toast-blink { width: 6px; height: 6px; border-radius: 50%; background: var(--red); animation: critBlink .85s infinite; }
+    .toast-body { font-size: .78rem; color: #aaa; line-height: 1.65; }
+    .toast-cta { font-family: var(--font-mono); font-size: .52rem; color: var(--yellow); margin-top: .75rem; cursor: pointer; text-transform: uppercase; letter-spacing: .1em; transition: color .2s; }
+    .toast-cta:hover { color: #fff; }
+
+    @media (max-width: 900px) {
+      .init-grid { grid-template-columns: 1fr; }
+      .dash-body  { grid-template-columns: 1fr; }
+      #init-panel, #dashboard, .launch-wrap { padding-left: 1.5rem; padding-right: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <div id="cursor"></div>
+  <div id="cursor-ring"></div>
+  <div id="page-transition"></div>
+  <canvas id="stars"></canvas>
+  <div id="nav-mount"></div>
+
+  <div id="hazard-toast">
+    <div class="toast-head"><span class="toast-blink"></span>Solar Flare Detected</div>
+    <div class="toast-body">Class X2.1 flare detected — AR2014. Elevated radiation on current trajectory. AI Copilot generating alternatives.</div>
+    <div class="toast-cta" onclick="dismissToast()">→ View AI Options</div>
+  </div>
+
+  <div id="page-hero">
+    <p class="page-eyebrow">Mission Control</p>
+    <h1 class="page-h1">Artemis VII<br><span class="gold">Earth → Moon</span></h1>
+    <p class="page-p">Initialize your mission parameters. ODIN computes the optimal trajectory, monitors continuously, and replans autonomously when hazards emerge.</p>
+  </div>
+
+  <div id="init-panel">
+    <div class="init-grid reveal">
+      <div class="init-block">
+        <div class="init-label">Mission Date</div>
+        <select class="init-select" id="date-sel">
+          <option>2014-03-15</option>
+          <option>2015-07-04</option>
+          <option>2016-11-22</option>
+          <option>2017-04-08</option>
+          <option>2018-09-30</option>
+        </select>
+        <p style="font-family:var(--font-mono);font-size:.52rem;color:var(--text-tertiary);margin-top:.8rem">Historical space weather loaded</p>
+      </div>
+      <div class="init-block">
+        <div class="init-label">Mission Priority</div>
+        <div class="prio-btns">
+          <button class="prio-btn active" onclick="setPrio(this)">Safety</button>
+          <button class="prio-btn" onclick="setPrio(this)">Fuel</button>
+          <button class="prio-btn" onclick="setPrio(this)">Time</button>
+          <button class="prio-btn" onclick="setPrio(this)">Balanced</button>
+        </div>
+      </div>
+      <div class="init-block">
+        <div class="init-label">System Status</div>
+        <div class="init-val" id="sys-status">INITIALIZED</div>
+        <p style="font-family:var(--font-mono);font-size:.52rem;color:var(--text-tertiary);margin-top:.25rem">Trajectory computed — Nominal</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="launch-wrap">
+    <button class="btn btn-primary btn-full" onclick="launchMission()" style="font-size:.78rem;padding:1.3rem"><span>⬡ Initialize Mission — Begin Trajectory Computation</span></button>
+  </div>
+
+  <div id="dashboard">
+    <div class="dash-wrap reveal">
+      <div class="dash-topbar">
+        <div class="dash-id">ODIN MISSION CONTROL — ARTEMIS-VII — 2014-03-15T14:22:07Z</div>
+        <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap">
+          <span class="pill pill-ok" id="status-pill">● NOMINAL</span>
+          <span style="font-family:var(--font-mono);font-size:.52rem;color:var(--text-tertiary)" id="met">MET: 18:24:07</span>
+        </div>
+      </div>
+      <div class="dash-body">
+        <div class="dash-main">
+          <canvas id="traj-canvas"></canvas>
+          <div class="phase-strip">
+            <span class="ph done">LEO</span>
+            <span class="ph done">TLI</span>
+            <span class="ph cur">Trans-Lunar Coast</span>
+            <span class="ph">LOI</span>
+            <span class="ph">Descent</span>
+          </div>
+        </div>
+        <div class="dash-panel">
+          <div class="p-sec">
+            <div class="p-label">Telemetry</div>
+            <div class="tel-row"><span class="tel-k">Velocity</span><span class="tel-v green" id="t-vel">1.02 km/s</span></div>
+            <div class="tel-row"><span class="tel-k">Altitude</span><span class="tel-v" style="color:#fff" id="t-alt">248,320 km</span></div>
+            <div class="tel-row"><span class="tel-k">Fuel</span><span class="tel-v" style="color:#fff" id="t-fuel">78.4%</span></div>
+            <div class="tel-row"><span class="tel-k">ETA Moon</span><span class="tel-v" style="color:#fff" id="t-eta">41h 12m</span></div>
+            <div class="tel-row"><span class="tel-k">Crew</span><span class="tel-v green">NOMINAL</span></div>
+            <div class="tel-row"><span class="tel-k">Comms</span><span class="tel-v green">LOCKED</span></div>
+          </div>
+          <div class="p-sec">
+            <div class="p-label">Risk Monitor</div>
+            <div class="risk-row">
+              <div class="risk-header"><span class="tel-k">Solar Radiation</span><span class="tel-v" id="r-solar-l" style="color:var(--yellow)">MODERATE</span></div>
+              <div class="risk-bar"><div class="risk-fill rf-med" id="r-solar" style="width:55%"></div></div>
+            </div>
+            <div class="risk-row">
+              <div class="risk-header"><span class="tel-k">Debris</span><span class="tel-v green" id="r-debris-l">LOW</span></div>
+              <div class="risk-bar"><div class="risk-fill rf-low" id="r-debris" style="width:18%"></div></div>
+            </div>
+            <div class="risk-row">
+              <div class="risk-header"><span class="tel-k">Nav Error</span><span class="tel-v green" id="r-nav-l">MINIMAL</span></div>
+              <div class="risk-bar"><div class="risk-fill rf-low" id="r-nav" style="width:8%"></div></div>
+            </div>
+          </div>
+          <div class="p-sec">
+            <div class="p-label">Phase</div>
+            <div class="ph-name" id="ph-name">TRANS-LUNAR COAST</div>
+            <div style="font-family:var(--font-mono);font-size:.52rem;color:var(--text-tertiary);margin-bottom:1rem">Phase 3 of 5 — On Schedule</div>
+            <div style="height:2px;background:#111;overflow:hidden;margin-bottom:.3rem">
+              <div style="height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-light));width:0%;transition:width 2s ease" id="prog-bar"></div>
+            </div>
+            <div style="font-family:var(--font-mono);font-size:.5rem;color:var(--text-tertiary);margin-bottom:1.2rem" id="prog-pct">0% complete</div>
+            <button class="btn btn-danger btn-full" onclick="triggerHazard()" style="margin-bottom:.6rem"><span>⚡ Simulate Hazard Event</span></button>
+            <button class="btn btn-primary btn-full" data-href="copilot.html" style="font-size:.6rem;padding:.8rem"><span>→ AI Copilot Panel</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-logo">O<span class="gold">DIN</span></div>
+      <nav class="footer-nav">
+        <a data-href="index.html">Home</a>
+        <a data-href="architecture.html">Architecture</a>
+        <a data-href="copilot.html">AI Copilot</a>
+        <a data-href="report.html">Report</a>
+      </nav>
+      <p class="footer-copy">Orbital Decision Intelligence Network</p>
+    </div>
+  </footer>
+
+  <script src="js/odin-core.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      odinInit('mission');
+      initTelemetry();
+      drawTrajectory();
+      setTimeout(() => { document.getElementById('prog-bar').style.width = '38%'; document.getElementById('prog-pct').textContent = '38% complete'; }, 600);
+    });
+
+    function setPrio(btn) { document.querySelectorAll('.prio-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
+    function dismissToast() { document.getElementById('hazard-toast').classList.remove('show'); }
+    function launchMission() {
+      const sv = document.getElementById('sys-status');
+      sv.textContent = 'COMPUTING...'; sv.style.color = 'var(--yellow)';
+      setTimeout(() => { sv.textContent = 'TRAJECTORY LOCKED'; sv.style.color = 'var(--green)'; }, 1100);
+      document.getElementById('prog-bar').style.width = '45%';
+      document.getElementById('prog-pct').textContent = '45% complete';
+    }
+
+    // Live telemetry
+    let alt = 248320, vel = 1.02, fuel = 78.4, etaH = 41, etaM = 12;
+    function initTelemetry() {
+      setInterval(() => {
+        alt  += Math.floor(Math.random() * 120 - 40);
+        vel  += (Math.random() * 0.02 - 0.01); vel = Math.max(0.8, Math.min(1.5, vel));
+        fuel -= 0.002; etaM--; if (etaM < 0) { etaM = 59; etaH--; }
+        document.getElementById('t-alt').textContent  = alt.toLocaleString() + ' km';
+        document.getElementById('t-vel').textContent  = vel.toFixed(2) + ' km/s';
+        document.getElementById('t-fuel').textContent = fuel.toFixed(1) + '%';
+        document.getElementById('t-eta').textContent  = etaH + 'h ' + etaM + 'm';
+      }, 1400);
+    }
+
+    let hazardActive = false;
+    function triggerHazard() {
+      document.getElementById('hazard-toast').classList.add('show');
+      const pill = document.getElementById('status-pill');
+      pill.className = 'pill pill-warn'; pill.textContent = '⚠ FLARE DETECTED';
+      setTimeout(() => { pill.className = 'pill pill-crit'; pill.textContent = '● CRITICAL'; }, 1200);
+      document.getElementById('r-solar').className = 'risk-fill rf-high';
+      document.getElementById('r-solar').style.width = '90%';
+      document.getElementById('r-solar-l').textContent = 'CRITICAL';
+      document.getElementById('r-solar-l').style.color = 'var(--red)';
+      setTimeout(() => { hazardActive = true; }, 600);
+      setTimeout(() => { pill.className = 'pill pill-ok'; pill.textContent = '● REPLANNED'; hazardActive = false; }, 5800);
+    }
+
+    // Trajectory canvas
+    const tc = document.getElementById('traj-canvas');
+    const tctx = tc.getContext('2d');
+    let trajT = 0;
+    function resizeTraj() { tc.width = tc.parentElement.clientWidth || 800; tc.height = 480; }
+    resizeTraj(); window.addEventListener('resize', resizeTraj);
+
+    function drawTrajectory() {
+      const w = tc.width, h = tc.height;
+      tctx.clearRect(0, 0, w, h);
+      // Grid
+      tctx.strokeStyle = 'rgba(255,255,255,0.025)'; tctx.lineWidth = .5;
+      for (let x = 0; x < w; x += 80) { tctx.beginPath(); tctx.moveTo(x,0); tctx.lineTo(x,h); tctx.stroke(); }
+      for (let y = 0; y < h; y += 80) { tctx.beginPath(); tctx.moveTo(0,y); tctx.lineTo(w,y); tctx.stroke(); }
+      const ex = 70, ey = h-70, mx2 = w-70, my2 = 70;
+      // Earth
+      const eg = tctx.createRadialGradient(ex,ey,0,ex,ey,55);
+      eg.addColorStop(0,'rgba(60,100,255,0.5)'); eg.addColorStop(1,'rgba(30,60,200,0)');
+      tctx.beginPath(); tctx.arc(ex,ey,55,0,Math.PI*2); tctx.fillStyle=eg; tctx.fill();
+      tctx.beginPath(); tctx.arc(ex,ey,22,0,Math.PI*2); tctx.fillStyle='rgba(50,90,220,0.9)'; tctx.fill();
+      // Moon
+      const mg2 = tctx.createRadialGradient(mx2,my2,0,mx2,my2,42);
+      mg2.addColorStop(0,'rgba(200,180,120,0.4)'); mg2.addColorStop(1,'rgba(200,180,120,0)');
+      tctx.beginPath(); tctx.arc(mx2,my2,42,0,Math.PI*2); tctx.fillStyle=mg2; tctx.fill();
+      tctx.beginPath(); tctx.arc(mx2,my2,18,0,Math.PI*2); tctx.fillStyle='rgba(180,160,100,0.85)'; tctx.fill();
+      // Ghost baseline
+      const c1x=ex+(mx2-ex)*.3, c1y=ey-50, c2x=ex+(mx2-ex)*.7, c2y=my2+50;
+      tctx.beginPath(); tctx.moveTo(ex,ey); tctx.bezierCurveTo(c1x,c1y,c2x,c2y,mx2,my2);
+      tctx.strokeStyle='rgba(255,255,255,0.05)'; tctx.lineWidth=1.5; tctx.setLineDash([5,10]); tctx.stroke(); tctx.setLineDash([]);
+      // Active path
+      const ac1x = hazardActive ? c1x-32 : c1x, ac1y = hazardActive ? c1y-65 : c1y;
+      const ac2x = hazardActive ? c2x-42 : c2x, ac2y = hazardActive ? c2y-32 : c2y;
+      tctx.beginPath(); tctx.moveTo(ex,ey); tctx.bezierCurveTo(ac1x,ac1y,ac2x,ac2y,mx2,my2);
+      const pathCol = hazardActive ? 'rgba(57,255,136,' : 'rgba(200,169,110,';
+      tctx.strokeStyle = pathCol+'0.15)'; tctx.lineWidth=2; tctx.stroke();
+      // Animated ship
+      const prog = trajT % 1; const pts = [];
+      for (let i=0; i<=Math.floor(prog*80); i++) {
+        const tt = i/80;
+        pts.push({
+          x: Math.pow(1-tt,3)*ex + 3*Math.pow(1-tt,2)*tt*ac1x + 3*(1-tt)*tt*tt*ac2x + tt*tt*tt*mx2,
+          y: Math.pow(1-tt,3)*ey + 3*Math.pow(1-tt,2)*tt*ac1y + 3*(1-tt)*tt*tt*ac2y + tt*tt*tt*my2
+        });
+      }
+      if (pts.length > 1) {
+        tctx.beginPath(); tctx.moveTo(pts[0].x, pts[0].y); pts.forEach(p => tctx.lineTo(p.x, p.y));
+        tctx.strokeStyle = pathCol+'0.9)'; tctx.lineWidth=2.5; tctx.stroke();
+        const last = pts[pts.length-1];
+        const sg2 = tctx.createRadialGradient(last.x,last.y,0,last.x,last.y,14);
+        sg2.addColorStop(0, pathCol+'1)'); sg2.addColorStop(1, pathCol+'0)');
+        tctx.beginPath(); tctx.arc(last.x,last.y,14,0,Math.PI*2); tctx.fillStyle=sg2; tctx.fill();
+        tctx.beginPath(); tctx.arc(last.x,last.y,4,0,Math.PI*2); tctx.fillStyle='#fff'; tctx.fill();
+        // Trail
+        for (let i=Math.max(0,pts.length-12); i<pts.length-1; i++) {
+          const age=(pts.length-1-i)/12;
+          tctx.beginPath(); tctx.arc(pts[i].x,pts[i].y,2*(1-age),0,Math.PI*2);
+          tctx.fillStyle=`rgba(200,169,110,${age*.35})`; tctx.fill();
+        }
+      }
+      // Hazard cone
+      if (hazardActive) {
+        tctx.beginPath(); tctx.moveTo(200,90); tctx.lineTo(330,200); tctx.lineTo(310,310); tctx.closePath();
+        tctx.fillStyle='rgba(255,61,61,0.05)'; tctx.fill();
+        tctx.strokeStyle='rgba(255,61,61,0.22)'; tctx.lineWidth=1; tctx.setLineDash([4,7]); tctx.stroke(); tctx.setLineDash([]);
+        tctx.font="500 9px 'Space Mono'"; tctx.fillStyle='rgba(255,61,61,0.45)'; tctx.fillText('FLARE CONE', 212, 82);
+      }
+      trajT += 0.004;
+      requestAnimationFrame(drawTrajectory);
+    }
+  </script>
+</body>
+</html>

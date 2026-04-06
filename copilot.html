@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ODIN — AI Copilot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@200;300;400;500;600;700;800;900&family=Barlow:wght@300;400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/odin.css">
+  <style>
+    /* HERO */
+    #page-hero { position:relative; padding:10rem var(--section-x) 5rem; z-index:2; overflow:hidden; }
+    #hero-net  { position:absolute; inset:0; z-index:0; opacity:.12; pointer-events:none; }
+    .h-eyebrow { position:relative; z-index:1; font-family:var(--font-mono); font-size:.58rem; letter-spacing:.4em; color:var(--gold); text-transform:uppercase; margin-bottom:1.2rem; opacity:0; animation:fadeUp .9s .1s forwards; }
+    .h-title   { position:relative; z-index:1; font-family:var(--font-display); font-size:clamp(4rem,8vw,9rem); font-weight:900; line-height:.88; margin-bottom:2rem; opacity:0; animation:fadeUp 1s .25s forwards; }
+    .h-body    { position:relative; z-index:1; font-size:.95rem; color:#555; max-width:540px; line-height:1.9; font-weight:300; opacity:0; animation:fadeUp .9s .4s forwards; }
+
+    /* MAIN LAYOUT */
+    #main { position:relative; z-index:2; padding:0 var(--section-x) 6rem; max-width:1400px; margin:0 auto; }
+
+    /* SCENARIO STRIP */
+    .sc-strip { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--border-1); margin-bottom:4rem; }
+    .sc-card  { background:var(--bg); padding:2rem; cursor:pointer; transition:background .3s; position:relative; overflow:hidden; }
+    .sc-card::after { content:''; position:absolute; bottom:0; left:0; right:0; height:1px; background:var(--gold); transform:scaleX(0); transition:transform .4s; }
+    .sc-card:hover  { background:#030303; }
+    .sc-card:hover::after { transform:scaleX(1); }
+    .sc-icon { font-size:1.4rem; margin-bottom:1rem; display:block; }
+    .sc-h    { font-family:var(--font-display); font-size:1rem; font-weight:700; letter-spacing:.04em; margin-bottom:.4rem; }
+    .sc-p    { font-size:.72rem; color:#444; line-height:1.65; }
+    .sc-tag  { display:inline-block; font-family:var(--font-mono); font-size:.48rem; letter-spacing:.1em; padding:.25rem .6rem; border:1px solid #1a1a1a; color:var(--text-tertiary); text-transform:uppercase; margin-top:1rem; transition:border-color .3s,color .3s; }
+    .sc-card:hover .sc-tag { border-color:var(--gold); color:var(--gold-dim); }
+
+    /* COPILOT GRID */
+    .copilot-grid { display:grid; grid-template-columns:1fr 1fr; gap:2rem; margin-bottom:4rem; }
+    .panel-col-label { font-family:var(--font-mono); font-size:.52rem; letter-spacing:.2em; color:var(--text-tertiary); text-transform:uppercase; margin-bottom:1rem; }
+
+    /* OPTIONS */
+    .opts-panel { display:flex; flex-direction:column; gap:1px; background:var(--border-1); }
+    .opt { background:var(--bg); padding:1.5rem; display:flex; gap:1.5rem; cursor:pointer; transition:background .3s; border-left:3px solid transparent; position:relative; }
+    .opt:hover    { background:#030303; border-left-color:rgba(200,169,110,.35); }
+    .opt.selected { background:#030303; border-left-color:var(--green); }
+    .opt-num  { font-family:var(--font-display); font-size:4rem; font-weight:900; color:#111; line-height:1; min-width:50px; transition:color .3s; }
+    .opt:hover .opt-num, .opt.selected .opt-num { color:#1c1c1c; }
+    .opt-h    { font-family:var(--font-display); font-size:1.05rem; font-weight:700; letter-spacing:.04em; margin-bottom:.4rem; }
+    .opt-p    { font-size:.75rem; color:#555; line-height:1.65; margin-bottom:.8rem; }
+    .opt-stats { display:flex; gap:1.2rem; flex-wrap:wrap; }
+    .opt-stat { font-family:var(--font-mono); font-size:.52rem; color:var(--text-tertiary); }
+    .opt-stat span { margin-left:.3rem; }
+    .opt-stat.pos span { color:var(--green); }
+    .opt-stat.neg span { color:var(--red); }
+    .opt-stat.neu span { color:var(--yellow); }
+    .opt-auto { position:absolute; top:1rem; right:1rem; font-family:var(--font-mono); font-size:.48rem; letter-spacing:.1em; padding:.22rem .55rem; border:1px solid var(--green); color:var(--green); text-transform:uppercase; }
+
+    /* WEIGHT RINGS */
+    .weights-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--border-1); }
+    .w-block { background:var(--bg); padding:2.5rem 2rem; text-align:center; }
+    .w-ring  { width:90px; height:90px; position:relative; margin:0 auto 1.5rem; }
+    .w-ring svg { position:absolute; top:-4px; left:-4px; width:98px; height:98px; transform:rotate(-90deg); }
+    .w-ring-val { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:1.5rem; font-weight:700; color:var(--gold); }
+    .w-name { font-family:var(--font-display); font-size:.9rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; margin-bottom:.2rem; }
+    .w-sub  { font-size:.65rem; color:var(--text-tertiary); margin-bottom:.8rem; }
+    .w-slider { width:100%; cursor:pointer; accent-color:var(--gold); }
+
+    @media (max-width:900px) {
+      .copilot-grid { grid-template-columns:1fr; }
+      .sc-strip     { grid-template-columns:1fr; }
+      .weights-grid { grid-template-columns:repeat(2,1fr); }
+      #main,#page-hero { padding-left:1.5rem; padding-right:1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <div id="cursor"></div>
+  <div id="cursor-ring"></div>
+  <div id="page-transition"></div>
+  <canvas id="stars"></canvas>
+  <div id="nav-mount"></div>
+
+  <div id="page-hero">
+    <canvas id="hero-net"></canvas>
+    <p class="h-eyebrow">AI Copilot</p>
+    <h1 class="h-title">Machine<br>intelligence<br><span class="gold">decides.</span></h1>
+    <p class="h-body">When ODIN's Risk Brain flags a threat, the AI Copilot activates — generating multiple replanning strategies in natural language, each scored against the live cost function.</p>
+  </div>
+
+  <div id="main">
+    <!-- Scenario selector -->
+    <p class="section-eyebrow reveal">Trigger a Scenario</p>
+    <div class="sc-strip reveal">
+      <div class="sc-card" onclick="triggerScenario('flare')">
+        <span class="sc-icon">☀</span>
+        <div class="sc-h">Solar Flare — Class X2.1</div>
+        <div class="sc-p">High-energy particle event from AR2014. Trajectory passes through radiation cone.</div>
+        <div class="sc-tag">High Severity</div>
+      </div>
+      <div class="sc-card" onclick="triggerScenario('debris')">
+        <span class="sc-icon">⬡</span>
+        <div class="sc-h">Debris Field Encounter</div>
+        <div class="sc-p">Cosmos 1408 fragment cluster on current trajectory. Collision probability: 2.3%.</div>
+        <div class="sc-tag">Medium Severity</div>
+      </div>
+      <div class="sc-card" onclick="triggerScenario('nav')">
+        <span class="sc-icon">◎</span>
+        <div class="sc-h">Navigation Error Accumulation</div>
+        <div class="sc-p">Gyroscope drift detected. Position uncertainty exceeding 40km threshold.</div>
+        <div class="sc-tag">Low Severity</div>
+      </div>
+    </div>
+
+    <!-- Main copilot panel -->
+    <div class="copilot-grid reveal">
+      <!-- Terminal -->
+      <div>
+        <p class="panel-col-label">Live Decision Feed</p>
+        <div class="terminal">
+          <div class="term-bar">
+            <div class="term-dot r"></div><div class="term-dot y"></div><div class="term-dot g"></div>
+            <span class="term-title">ODIN COPILOT v4.2 — LIVE</span>
+          </div>
+          <div class="term-body" id="term-body" style="height:380px">
+            <p class="tl dim">// ──────────────────────────────</p>
+            <p class="tl dim">// ODIN AI COPILOT — ONLINE</p>
+            <p class="tl dim">// Artemis-VII — 2014-03-15</p>
+            <p class="tl dim">// ──────────────────────────────</p>
+            <p class="tl ok">✓ Trajectory Brain: NOMINAL</p>
+            <p class="tl ok">✓ Risk Brain: MONITORING</p>
+            <p class="tl ok">✓ Path Planner: READY</p>
+            <p class="tl dim">// ──────────────────────────────</p>
+            <p class="tl info">▶ No active threats detected</p>
+            <p class="tl info">▶ Baseline trajectory: optimal</p>
+            <p class="tl dim">// Awaiting hazard event...</p>
+            <p class="tl w">Select a scenario above to activate<span class="tcursor"></span></p>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="autoSelect()" style="margin-top:1rem;font-size:.7rem"><span>⬡ Auto-Select Best Option</span></button>
+      </div>
+      <!-- Options -->
+      <div>
+        <p class="panel-col-label">AI-Generated Alternatives</p>
+        <div class="opts-panel" id="opts-panel">
+          <div class="opt" id="opt-A" onclick="selectOpt('A')">
+            <div class="opt-num">A</div>
+            <div>
+              <div class="opt-h">—</div>
+              <div class="opt-p" style="color:var(--text-tertiary)">Trigger a scenario above to generate alternatives.</div>
+            </div>
+          </div>
+          <div class="opt" id="opt-B" onclick="selectOpt('B')">
+            <div class="opt-num">B</div>
+            <div><div class="opt-h">—</div><div class="opt-p" style="color:var(--text-tertiary)">Waiting for hazard event...</div></div>
+          </div>
+          <div class="opt" id="opt-C" onclick="selectOpt('C')">
+            <div class="opt-num">C</div>
+            <div><div class="opt-h">—</div><div class="opt-p" style="color:var(--text-tertiary)">AI Copilot standing by.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weight rings -->
+    <p class="section-eyebrow reveal">Decision Weights — Adjustable</p>
+    <div class="weights-grid reveal">
+      <div class="w-block">
+        <div class="w-ring">
+          <svg viewBox="0 0 98 98"><circle cx="49" cy="49" r="44" fill="none" stroke="#111" stroke-width="4"/><circle id="ring-fuel" cx="49" cy="49" r="44" fill="none" stroke="#c8a96e" stroke-width="4" stroke-dasharray="276" stroke-dashoffset="193" stroke-linecap="round"/></svg>
+          <div class="w-ring-val" id="fuel-val">30%</div>
+        </div>
+        <div class="w-name">Fuel</div><div class="w-sub">Propellant efficiency</div>
+        <input type="range" min="5" max="60" value="30" class="w-slider" oninput="updateRing('fuel',this.value)">
+      </div>
+      <div class="w-block">
+        <div class="w-ring">
+          <svg viewBox="0 0 98 98"><circle cx="49" cy="49" r="44" fill="none" stroke="#111" stroke-width="4"/><circle id="ring-time" cx="49" cy="49" r="44" fill="none" stroke="#4da6ff" stroke-width="4" stroke-dasharray="276" stroke-dashoffset="207" stroke-linecap="round"/></svg>
+          <div class="w-ring-val" id="time-val" style="color:var(--blue)">25%</div>
+        </div>
+        <div class="w-name">Time</div><div class="w-sub">Transit duration</div>
+        <input type="range" min="5" max="60" value="25" class="w-slider" oninput="updateRing('time',this.value)" style="accent-color:var(--blue)">
+      </div>
+      <div class="w-block">
+        <div class="w-ring">
+          <svg viewBox="0 0 98 98"><circle cx="49" cy="49" r="44" fill="none" stroke="#111" stroke-width="4"/><circle id="ring-risk" cx="49" cy="49" r="44" fill="none" stroke="#ff3d3d" stroke-width="4" stroke-dasharray="276" stroke-dashoffset="179" stroke-linecap="round"/></svg>
+          <div class="w-ring-val" id="risk-val" style="color:var(--red)">35%</div>
+        </div>
+        <div class="w-name">Risk</div><div class="w-sub">Crew safety index</div>
+        <input type="range" min="5" max="60" value="35" class="w-slider" oninput="updateRing('risk',this.value)" style="accent-color:var(--red)">
+      </div>
+      <div class="w-block">
+        <div class="w-ring">
+          <svg viewBox="0 0 98 98"><circle cx="49" cy="49" r="44" fill="none" stroke="#111" stroke-width="4"/><circle id="ring-success" cx="49" cy="49" r="44" fill="none" stroke="#39ff88" stroke-width="4" stroke-dasharray="276" stroke-dashoffset="248" stroke-linecap="round"/></svg>
+          <div class="w-ring-val" id="success-val" style="color:var(--green)">10%</div>
+        </div>
+        <div class="w-name">Success</div><div class="w-sub">Mission completion</div>
+        <input type="range" min="5" max="60" value="10" class="w-slider" oninput="updateRing('success',this.value)" style="accent-color:var(--green)">
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-logo">O<span class="gold">DIN</span></div>
+      <nav class="footer-nav">
+        <a data-href="index.html">Home</a>
+        <a data-href="mission.html">Mission</a>
+        <a data-href="architecture.html">Architecture</a>
+        <a data-href="report.html">Report</a>
+      </nav>
+      <p class="footer-copy">Orbital Decision Intelligence Network</p>
+    </div>
+  </footer>
+
+  <script src="js/odin-core.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      odinInit('copilot');
+      initHeroParticles();
+    });
+
+    // Particle canvas for hero bg
+    function initHeroParticles() {
+      const c = document.getElementById('hero-net'); if (!c) return;
+      const ctx = c.getContext('2d'); let ps = [];
+      const resize = () => {
+        c.width = c.offsetWidth; c.height = c.offsetHeight;
+        ps = Array.from({length:80},()=>({x:Math.random()*c.width,y:Math.random()*c.height,vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35,r:Math.random()*1.5+.3}));
+      };
+      resize(); window.addEventListener('resize',resize);
+      const draw = () => {
+        requestAnimationFrame(draw);
+        ctx.clearRect(0,0,c.width,c.height);
+        ps.forEach(p=>{
+          p.x+=p.vx; p.y+=p.vy;
+          if(p.x<0||p.x>c.width)p.vx*=-1;
+          if(p.y<0||p.y>c.height)p.vy*=-1;
+          ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+          ctx.fillStyle='rgba(200,169,110,0.45)'; ctx.fill();
+        });
+        ps.forEach((a,i)=>ps.slice(i+1).forEach(b=>{
+          const d=Math.hypot(a.x-b.x,a.y-b.y);
+          if(d<115){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=`rgba(200,169,110,${.11*(1-d/115)})`;ctx.lineWidth=.5;ctx.stroke();}
+        }));
+      };
+      draw();
+    }
+
+    // Scenarios data
+    const SCENARIOS = {
+      flare: {
+        lines:[
+          {c:'err',t:'⚠ ALERT: Solar flare X2.1 — Region AR2014'},
+          {c:'warn',t:'▶ Particle arrival in T-41 minutes'},
+          {c:'warn',t:'▶ Trajectory enters radiation cone at 68%'},
+          {c:'info',t:'▶ AI Copilot: Analyzing 847 trajectory variants...'},
+          {c:'dim', t:'  → Option A: burn delay protocol'},
+          {c:'dim', t:'  → Option B: azimuth shift +18°'},
+          {c:'dim', t:'  → Option C: fast-exit transfer'},
+          {c:'info',t:'▶ Cost scores: A=0.388  B=0.341  C=0.312'},
+          {c:'ok',  t:'✓ AUTO-SELECT: Option C (cost=0.312)'},
+          {c:'ok',  t:'✓ Radiation exposure reduced by 44%'},
+        ],
+        opts:[
+          {h:'Delay Trans-Lunar Burn 2h',     p:'Hold orbit until flare intensity drops below Class M threshold. Low delta-V.',         fuel:'+1.2%',time:'+2.1h',risk:'-34%',score:'0.388'},
+          {h:'Reroute via Polar Arc +18°',     p:'Shift azimuth to exploit magnetosphere shielding during flare peak propagation.',       fuel:'+3.8%',time:'+0.4h',risk:'-51%',score:'0.341'},
+          {h:'Fast-Exit Transfer Window ★',    p:'Accelerate departure by 0.5h to exit flare cone before intensity peak. Optimal.',      fuel:'+2.1%',time:'-0.5h',risk:'-44%',score:'0.312',auto:true},
+        ]
+      },
+      debris: {
+        lines:[
+          {c:'err', t:'⚠ ALERT: Debris cluster — Cosmos 1408'},
+          {c:'warn',t:'▶ Collision probability: 2.3% on current path'},
+          {c:'warn',t:'▶ Fragment density: 340 objects/km³'},
+          {c:'info',t:'▶ AI Copilot: Modeling avoidance trajectories...'},
+          {c:'dim', t:'  → Option A: altitude raise +12km'},
+          {c:'dim', t:'  → Option B: timing slip 90 minutes'},
+          {c:'dim', t:'  → Option C: combined maneuver'},
+          {c:'info',t:'▶ Cost scores: A=0.302  B=0.355  C=0.288'},
+          {c:'ok',  t:'✓ AUTO-SELECT: Option C (cost=0.288)'},
+          {c:'ok',  t:'✓ Collision probability reduced to 0.04%'},
+        ],
+        opts:[
+          {h:'Altitude Raise +12km',          p:'Boost apogee slightly to clear debris band. Minimal fuel cost, straightforward.',       fuel:'+0.8%',time:'+0.1h',risk:'-78%',score:'0.302'},
+          {h:'90-Minute Timing Slip',          p:'Delay TLI burn to let debris cloud advance past crossing. Fuel-neutral.',               fuel:'+0.0%',time:'+1.5h',risk:'-88%',score:'0.355'},
+          {h:'Combined Altitude + Phase ★',    p:'Raise altitude 6km and slip timing 30min. Optimal risk reduction.',                    fuel:'+0.4%',time:'+0.5h',risk:'-95%',score:'0.288',auto:true},
+        ]
+      },
+      nav: {
+        lines:[
+          {c:'warn',t:'⚠ WARNING: IMU gyroscope drift detected'},
+          {c:'warn',t:'▶ Position uncertainty: 47.2km (limit: 40km)'},
+          {c:'warn',t:'▶ Attitude error: 0.003°/hr accumulating'},
+          {c:'info',t:'▶ AI Copilot: Generating correction burns...'},
+          {c:'dim', t:'  → Option A: DSN star-tracker realignment'},
+          {c:'dim', t:'  → Option B: immediate midcourse burn'},
+          {c:'dim', t:'  → Option C: dual-redundant correction'},
+          {c:'info',t:'▶ Cost scores: A=0.198  B=0.244  C=0.221'},
+          {c:'ok',  t:'✓ AUTO-SELECT: Option A (cost=0.198)'},
+          {c:'ok',  t:'✓ Position uncertainty reduced to 2.1km'},
+        ],
+        opts:[
+          {h:'DSN Star-Tracker Realignment ★', p:'Use Deep Space Network + onboard star tracker to recalibrate IMU. Zero fuel cost.',    fuel:'+0.0%',time:'+0.2h',risk:'-89%',score:'0.198',auto:true},
+          {h:'Immediate Midcourse Burn',        p:'Small correction burn to null accumulated trajectory error. Fast, small fuel cost.',  fuel:'+0.6%',time:'+0.0h',risk:'-72%',score:'0.244'},
+          {h:'Dual-Redundant Method',           p:'Combined realignment + correction burn. Belt-and-suspenders maximum certainty.',     fuel:'+0.3%',time:'+0.3h',risk:'-94%',score:'0.221'},
+        ]
+      }
+    };
+
+    let currentScenario = null;
+
+    function triggerScenario(type) {
+      currentScenario = type;
+      const s   = SCENARIOS[type];
+      const tb  = document.getElementById('term-body');
+      tb.innerHTML = '<p class="tl dim">// ──────────────────────────────</p>';
+      const addLine = (cls, text, delay) => setTimeout(() => {
+        const p = document.createElement('p');
+        p.className = `tl ${cls}`; p.textContent = text;
+        tb.appendChild(p); tb.scrollTop = tb.scrollHeight;
+      }, delay);
+      s.lines.forEach((l, i) => addLine(l.c, l.t, 400 + i * 340));
+      setTimeout(() => renderOptions(s), 400 + s.lines.length * 340 + 300);
+    }
+
+    function renderOptions(s) {
+      s.opts.forEach((o, i) => {
+        const el  = document.getElementById('opt-' + 'ABC'[i]);
+        el.className = 'opt' + (o.auto ? ' selected' : '');
+        el.innerHTML = `
+          ${o.auto ? '<div class="opt-auto">★ AUTO</div>' : ''}
+          <div class="opt-num">${'ABC'[i]}</div>
+          <div>
+            <div class="opt-h">${o.h}</div>
+            <div class="opt-p">${o.p}</div>
+            <div class="opt-stats">
+              <div class="opt-stat neu">FUEL<span>${o.fuel}</span></div>
+              <div class="opt-stat neu">TIME<span>${o.time}</span></div>
+              <div class="opt-stat pos">RISK<span>${o.risk}</span></div>
+              <div class="opt-stat">SCORE<span style="color:#fff">${o.score}</span></div>
+            </div>
+          </div>`;
+      });
+    }
+
+    function selectOpt(id) {
+      document.querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
+      document.getElementById('opt-' + id).classList.add('selected');
+    }
+
+    function autoSelect() {
+      if (!currentScenario) { triggerScenario('flare'); return; }
+      const opts  = SCENARIOS[currentScenario].opts;
+      const best  = opts.reduce((a, b) => parseFloat(a.score) < parseFloat(b.score) ? a : b);
+      const idx   = opts.indexOf(best);
+      selectOpt('ABC'[idx]);
+      const tb = document.getElementById('term-body');
+      const p  = document.createElement('p'); p.className = 'tl ok';
+      p.textContent = `✓ Manual confirm: Option ${'ABC'[idx]} (cost=${best.score})`;
+      tb.appendChild(p); tb.scrollTop = tb.scrollHeight;
+    }
+
+    function updateRing(name, val) {
+      const circ = 276;
+      document.getElementById('ring-' + name).setAttribute('stroke-dashoffset', circ - circ * val / 100);
+      document.getElementById(name + '-val').textContent = val + '%';
+    }
+  </script>
+</body>
+</html>
